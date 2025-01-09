@@ -1,4 +1,7 @@
 use anchor_lang::prelude::*;
+use instructions::*;
+
+pub mod instructions;
 
 declare_id!("5RThBYsqEfSmA39fH6RPrCPY2CmUnVNZZqG91qzybbTx");
 
@@ -6,11 +9,12 @@ declare_id!("5RThBYsqEfSmA39fH6RPrCPY2CmUnVNZZqG91qzybbTx");
 pub mod amm_basein {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        msg!("Greetings from: {:?}", ctx.program_id);
-        Ok(())
+    /// swap_base_in instruction
+    pub fn proxy_swap_base_in(
+        ctx: Context<ProxySwapBaseIn>,
+        amount_in: u64,
+        minimum_amount_out: u64,
+    ) -> Result<()> {
+        instructions::swap_base_in(ctx, amount_in, minimum_amount_out)
     }
 }
-
-#[derive(Accounts)]
-pub struct Initialize {}
