@@ -3,7 +3,7 @@ use instructions::*;
 
 pub mod instructions;
 
-declare_id!("5RThBYsqEfSmA39fH6RPrCPY2CmUnVNZZqG91qzybbTx");
+declare_id!("D4i1459Wu1XTM12BDLHHYuR7uDmA62G1iAZJCsJTs4PD");
 
 #[program]
 pub mod amm_basein {
