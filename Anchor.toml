@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-amm_basein = "A6VexJygb6obTvB6UX7S6GjjewDBfU7igR4TRfAWxvXT"
+amm_basein = "En4ePE1rLRxZHFe7c49ChZE3wwJAfdELNjWW9yydxfFA"
 
 [registry]
 url = "https://api.apr.dev"

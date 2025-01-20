@@ -1,9 +1,11 @@
 use anchor_lang::prelude::*;
 use instructions::*;
 
+pub mod errors;
 pub mod instructions;
+pub mod utils;
 
-declare_id!("A6VexJygb6obTvB6UX7S6GjjewDBfU7igR4TRfAWxvXT");
+declare_id!("En4ePE1rLRxZHFe7c49ChZE3wwJAfdELNjWW9yydxfFA");
 
 #[program]
 pub mod amm_basein {
@@ -20,8 +22,19 @@ pub mod amm_basein {
     /// swap_base_in instruction
     pub fn proxy_swap_dlmm<'info>(
         ctx: Context<'_, '_, '_, 'info, DlmmSwap<'info>>,
-        minimum_amount_out_percent: u64,
+        amount_in: u64,
+        minimum_amount_out: u64,
+        // proxy_swap_base_in_index: u8,
+        // token_a_amount_begin: u64,
+        // raydium_amount_in: u64,
     ) -> Result<()> {
-        instructions::handle_dlmm_swap(ctx, minimum_amount_out_percent)
+        instructions::handle_dlmm_swap(
+            ctx,
+            amount_in,
+            minimum_amount_out,
+            // proxy_swap_base_in_index,
+            // token_a_amount_begin,
+            // raydium_amount_in,
+        )
     }
 }

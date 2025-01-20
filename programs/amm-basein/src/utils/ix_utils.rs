@@ -60,7 +60,9 @@ pub struct IxIterator<'a, IxLoader: InstructionLoader> {
     instruction_loader: &'a IxLoader,
 }
 
-impl<'a, IxLoader> IxIterator<'a, IxLoader> where IxLoader: InstructionLoader,
+impl<'a, IxLoader> IxIterator<'a, IxLoader>
+where
+    IxLoader: InstructionLoader,
 {
     pub fn new_at(start_ix_index: usize, instruction_loader: &'a IxLoader) -> Self {
         Self {
@@ -70,7 +72,9 @@ impl<'a, IxLoader> IxIterator<'a, IxLoader> where IxLoader: InstructionLoader,
     }
 }
 
-impl<IxLoader> Iterator for IxIterator<'_, IxLoader> where IxLoader: InstructionLoader,
+impl<IxLoader> Iterator for IxIterator<'_, IxLoader>
+where
+    IxLoader: InstructionLoader,
 {
     type Item = std::result::Result<Instruction, ProgramError>;
 

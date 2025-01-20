@@ -1,5 +1,5 @@
-use anchor_lang::prelude::*;
-use anchor_spl::token::Token;
+use anchor_lang::{prelude::*, solana_program::sysvar};
+use anchor_spl::token::{Mint, Token, TokenAccount};
 use raydium_amm_cpi::SwapBaseIn;
 
 impl<'a, 'b, 'c, 'info> From<&mut ProxySwapBaseIn<'info>>
@@ -38,6 +38,9 @@ pub fn swap_base_in(
     amount_in: u64,
     minimum_amount_out: u64,
 ) -> Result<()> {
+    // Need compare the amount in before with the amount input in the swap user_token_source
+    // ctx.accounts.user_token_source_ata.amount === token_a_amount_begin  (dlmm swap)
+
     raydium_amm_cpi::swap_base_in(ctx.accounts.into(), amount_in, minimum_amount_out)
 }
 
@@ -94,4 +97,11 @@ pub struct ProxySwapBaseIn<'info> {
     pub user_source_owner: Signer<'info>,
     /// CHECK: Safe. The spl token program
     pub token_program: Program<'info, Token>,
+
+    #[account(mut)]
+    pub user_token_source_ata: Box<Account<'info, TokenAccount>>,
+
+    /// CHECK:  Sysvar info
+    #[account(address = sysvar::instructions::ID)]
+    pub sysvar_info: AccountInfo<'info>,
 }

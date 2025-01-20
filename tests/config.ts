@@ -16,8 +16,7 @@ const cluster = "devnet"; // 'mainnet' | 'devnet'
 
 let raydium: Raydium | undefined;
 export const connection = new Connection(
-  "http://127.0.0.1:8899",
-  // "https://api.devnet.solana.com",
+  "https://api.devnet.solana.com",
   "confirmed"
 );
 
