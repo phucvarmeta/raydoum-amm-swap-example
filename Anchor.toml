@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-amm_basein = "D4i1459Wu1XTM12BDLHHYuR7uDmA62G1iAZJCsJTs4PD"
+amm_basein = "A6VexJygb6obTvB6UX7S6GjjewDBfU7igR4TRfAWxvXT"
 
 [registry]
 url = "https://api.apr.dev"
@@ -16,3 +16,11 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/*.test.ts"
+
+[[test.genesis]]
+address = "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+program = "./dlmm.so"
+
+[[test.genesis]]
+address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+program = "./local_programs/metadata.so"

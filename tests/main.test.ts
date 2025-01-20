@@ -1,17 +1,20 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import DLMM from "@meteora-ag/dlmm";
+import {
+  createMint,
+  getOrCreateAssociatedTokenAccount,
+  mintTo,
+} from "@solana/spl-token";
+import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import { connection, init } from "./config";
 import { createAmmPool } from "./create_amm_pool";
 import { createMarket } from "./create_market";
+import { createPermissionlessDlmmPool } from "./libs/create_pool_utils";
+import { createTokenMint } from "./libs/create_token_mint";
+import { getQuoteMint } from "./libs/utils";
+import { seedBin } from "./seed_liquidity_single_bin";
 import { swap } from "./swap";
-
-const globalInfo = {
-  marketProgram: new PublicKey("EoTcMgcDRTJVZDMZWBoU6rhYHZfkNTVEAfz3uUJRcYGj"),
-  ammProgram: new PublicKey("HWy1jotHpo6UqeQxx49dpYYdQB8wj9Qk9MdxwjLvDHB8"),
-  ammCreateFeeDestination: new PublicKey(
-    "3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"
-  ),
-  market: new Keypair(),
-};
+import { swapDlmm } from "./swap_dlmm";
 
 const confirmOptions = {
   skipPreflight: true,
@@ -19,16 +22,99 @@ const confirmOptions = {
 
 describe("amm-proxy", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
-  const marketId = globalInfo.market.publicKey.toString();
-  console.log("market:", marketId.toString());
-  it("create market!", async () => {
-    // createMarket();
-    // createMarketV1();
-  });
+  // it("create market!", async () => {
+  //   // createMarket();
+  //   // createMarketV1();
+  // });
+  // it("create pool!", async () => {
+  //   //  createAmmPool();
+  // });
   it("create pool!", async () => {
-    // createAmmPool();
-  });
-  it("create pool!", async () => {
-    swap();
+    const { owner } = await init();
+
+    // let ownerTokenX = await getOrCreateAssociatedTokenAccount(
+    //   connection,
+    //   owner,
+    //   dlmmPool.lbPair.tokenXMint,
+    //   owner.publicKey
+    // );
+
+    // await mintTo(
+    //   connection,
+    //   owner,
+    //   dlmmPool.lbPair.tokenXMint,
+    //   ownerTokenX.address,
+    //   owner.publicKey,
+    //   5 * 10 ** 9
+    // );
+
+    // ownerTokenX = await getOrCreateAssociatedTokenAccount(
+    //   connection,
+    //   owner,
+    //   dlmmPool.lbPair.tokenXMint,
+    //   owner.publicKey
+    // );
+    // console.log("🚀 ~ it ~ ownerTokenX:", ownerTokenX);
+
+    // console.log("🚀 ~ it ~ dlmmPool:", dlmmPool.lbPair);
+    // await swap();
+    // getLBPairBySingleToken("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+
+    const baseMint = await createTokenMint(connection, owner, {
+      dryRun: false,
+      mintTokenAmount: 1000000,
+      decimals: 9,
+      computeUnitPriceMicroLamports: 100000,
+    });
+
+    const account = await getOrCreateAssociatedTokenAccount(
+      connection,
+      owner,
+      baseMint,
+      owner.publicKey
+    );
+
+    let quoteMint = getQuoteMint("SOL");
+
+    const { poolKey } = await createPermissionlessDlmmPool(
+      connection,
+      owner,
+      baseMint,
+      quoteMint,
+      {
+        cluster: "localhost",
+      }
+    );
+    const POOL_ADDRESS = poolKey;
+    const dlmmPool = await DLMM.create(connection, POOL_ADDRESS);
+    console.log("🚀 ~ it ~ dlmmPool:", dlmmPool.lbPair);
+    console.log(
+      "🚀 ~ it ~ dlmmPool:",
+      dlmmPool.lbPair.activationPoint.toNumber()
+    );
+
+    await seedBin(owner, poolKey);
+
+    // await swapDlmm();
+
+    // const swapTx = await swap();
+    // const swapDlmmTx = await swapDlmm();
+    // let latestBlockHash = await connection.getLatestBlockhash();
+    // const transaction = new Transaction({
+    //   blockhash: latestBlockHash.blockhash,
+    //   lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+    // });
+    // transaction.add(swapTx);
+    // transaction.add(swapDlmmTx);
+    // transaction.sign(owner);
+    // const signature = await connection.sendRawTransaction(
+    //   transaction.serialize()
+    // );
+    // latestBlockHash = await connection.getLatestBlockhash();
+    // await connection.confirmTransaction({
+    //   signature: signature,
+    //   blockhash: latestBlockHash.blockhash,
+    //   lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+    // });
   });
 });

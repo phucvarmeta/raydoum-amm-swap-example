@@ -1,4 +1,10 @@
-import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Keypair,
+  PublicKey,
+  Transaction,
+  Connection,
+  LAMPORTS_PER_SOL,
+} from "@solana/web3.js";
 import {
   AMM_V4,
   AMM_STABLE,
@@ -30,4 +36,28 @@ export const getCurrentWallet = async (filepath?: string) => {
 
   const fileContents = (await readFile(filepath)).toString();
   return Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fileContents)));
+};
+
+export const requestAirdrop = async (
+  connection: Connection,
+  address: PublicKey,
+  lamports: number = LAMPORTS_PER_SOL
+) => {
+  let latestBlockHash = await connection.getLatestBlockhash();
+
+  await connection.confirmTransaction({
+    signature: await connection.requestAirdrop(address, lamports),
+    blockhash: latestBlockHash.blockhash,
+    lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+  });
+};
+
+export const confirmTransaction = async (connection, txSignature: string) => {
+  let latestBlockHash = await connection.getLatestBlockhash();
+
+  await connection.confirmTransaction({
+    signature: txSignature,
+    blockhash: latestBlockHash.blockhash,
+    lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+  });
 };

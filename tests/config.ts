@@ -3,7 +3,7 @@ import {
   TxVersion,
   parseTokenAccountResp,
 } from "@raydium-io/raydium-sdk-v2";
-import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { getCurrentWallet } from "./utils";
 import * as anchor from "@coral-xyz/anchor";
@@ -15,9 +15,9 @@ export const txVersion = TxVersion.V0; // or TxVersion.LEGACY
 const cluster = "devnet"; // 'mainnet' | 'devnet'
 
 let raydium: Raydium | undefined;
-
 export const connection = new Connection(
-  "https://api.devnet.solana.com",
+  "http://127.0.0.1:8899",
+  // "https://api.devnet.solana.com",
   "confirmed"
 );
 

@@ -6,8 +6,8 @@ import {
   fetchMultipleInfo,
 } from "@raydium-io/raydium-sdk-v2";
 import { connection, init } from "./config";
-import BN from "bn.js";
 import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
+import BN from "bn.js";
 
 const globalInfo = {
   marketProgram: new PublicKey("EoTcMgcDRTJVZDMZWBoU6rhYHZfkNTVEAfz3uUJRcYGj"),
@@ -50,6 +50,7 @@ export const swap = async () => {
     mintOut: poolInfo.mintB.address, // swap mintB -> mintA, use: poolInfo.mintA.address
     slippage: 0.01, // range: 1 ~ 0.0001, means 100% ~ 0.01%
   });
+  out.amountOut;
   let userCoinTokenAccount = await getOrCreateAssociatedTokenAccount(
     connection,
     owner,
@@ -103,9 +104,9 @@ export const swap = async () => {
       owner.publicKey
     );
     const amountAAfter = userCoinTokenAccount.amount;
-    console.log("Amount A after", amountAAfter);
-    // console.log("🚀 ~ swap ~ tx:", tx);
+
+    return tx;
   } catch (error) {
-    console.log("🚀 ~ swap ~ error:", error);
+    return null;
   }
 };

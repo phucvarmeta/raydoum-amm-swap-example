@@ -1,8 +1,5 @@
 import {
   MARKET_STATE_LAYOUT_V3,
-  AMM_V4,
-  OPEN_BOOK_PROGRAM,
-  FEE_DESTINATION_ID,
   DEVNET_PROGRAM_ID,
 } from "@raydium-io/raydium-sdk-v2";
 import { connection, init, txVersion } from "./config";
@@ -36,16 +33,12 @@ export const createAmmPool = async () => {
       quoteMint,
       owner.publicKey
     );
-    console.log("🚀 ~ createAmmPool ~ baseMint:", baseMint);
-    console.log("🚀 ~ createAmmPool ~ quoteMint:", quoteMint);
 
     // check mint info here: https://api-v3.raydium.io/mint/list
     // or get mint info by api: await raydium.token.getTokenInfo('mint address')
 
     const baseMintInfo = await raydium.token.getTokenInfo(baseMint);
-    console.log("🚀 ~ createAmmPool ~ baseMintInfo:", baseMintInfo);
     const quoteMintInfo = await raydium.token.getTokenInfo(quoteMint);
-    console.log("🚀 ~ createAmmPool ~ quoteMintInfo:", quoteMintInfo);
 
     await mintTo(
       connection,

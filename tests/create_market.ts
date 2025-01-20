@@ -19,7 +19,6 @@ export const createMarket = async () => {
     owner.publicKey,
     9
   );
-  console.log("🚀 ~ createMarket ~ mintA:", mintA);
 
   const mintB = await createMint(
     connection,
