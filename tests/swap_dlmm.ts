@@ -12,9 +12,11 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { DLMM_PROGRAM_IDS } from "./libs/constants";
+import { runSimulateTransaction } from "./libs/utils";
 
 export const swapDlmm = async () => {
   const { owner, program } = await init();
+  console.log("🚀 ~ swapDlmm ~ owner:", owner);
 
   // const a = await DLMM.getLbPairs(connection, {
   //   cluster: "devnet",
@@ -45,7 +47,7 @@ export const swapDlmm = async () => {
     new BN(10),
     binArrays
   );
-  console.log("🚀 ~ swapDlmm ~ swapQuote:", swapQuote);
+  // console.log("🚀 ~ swapDlmm ~ swapQuote:", swapQuote);
 
   const userTokenX = await getOrCreateAssociatedTokenAccount(
     connection,
@@ -66,35 +68,35 @@ export const swapDlmm = async () => {
     [seed],
     new PublicKey(DLMM_PROGRAM_IDS["devnet"])
   );
-  console.log("🚀 ~ swapDlmm ~ eventAuthority:", eventAuthority);
-  console.log(
-    "🚀 ~ swapDlmm ~ dlmmPool.lbPair.reserveY:",
-    dlmmPool.lbPair.reserveY
-  );
-  console.log("🚀 ~ swapDlmm ~ dlmmPool.pubkey:", dlmmPool.pubkey);
-  console.log("🚀 ~ swapDlmm ~ DLMM_PROGRAM_IDS", DLMM_PROGRAM_IDS["devnet"]);
-  console.log(
-    "🚀 ~ swapDlmm ~ dlmmPool.lbPair.oracle:",
-    dlmmPool.lbPair.oracle
-  );
-  console.log("🚀 ~ swapDlmm ~ userTokenX.address:", userTokenX.address);
-  console.log("🚀 ~ swapDlmm ~ userTokenX.address:", userTokenX.address);
-  console.log("🚀 ~ swapDlmm ~ userTokenY.address:", userTokenY.address);
-  console.log("🚀 ~ swapDlmm ~ owner.publicKey:", owner.publicKey);
-  console.log("🚀 ~ swapDlmm ~ TOKEN_PROGRAM_ID:", TOKEN_PROGRAM_ID);
-  console.log("🚀 ~ swapDlmm ~ TOKEN_PROGRAM_ID:", TOKEN_PROGRAM_ID);
-  console.log(
-    "🚀 ~ swapDlmm ~ dlmmPool.lbPair.reserveX:",
-    dlmmPool.lbPair.reserveX
-  );
-  console.log(
-    "🚀 ~ swapDlmm ~ dlmmPool.lbPair.tokenXMint:",
-    dlmmPool.lbPair.tokenXMint
-  );
-  console.log(
-    "🚀 ~ swapDlmm ~ dlmmPool.lbPair.tokenYMint:",
-    dlmmPool.lbPair.tokenYMint
-  );
+  // console.log("🚀 ~ swapDlmm ~ eventAuthority:", eventAuthority);
+  // console.log(
+  //   "🚀 ~ swapDlmm ~ dlmmPool.lbPair.reserveY:",
+  //   dlmmPool.lbPair.reserveY
+  // );
+  // console.log("🚀 ~ swapDlmm ~ dlmmPool.pubkey:", dlmmPool.pubkey);
+  // console.log("🚀 ~ swapDlmm ~ DLMM_PROGRAM_IDS", DLMM_PROGRAM_IDS["devnet"]);
+  // console.log(
+  //   "🚀 ~ swapDlmm ~ dlmmPool.lbPair.oracle:",
+  //   dlmmPool.lbPair.oracle
+  // );
+  // console.log("🚀 ~ swapDlmm ~ userTokenX.address:", userTokenX.address);
+  // console.log("🚀 ~ swapDlmm ~ userTokenX.address:", userTokenX.address);
+  // console.log("🚀 ~ swapDlmm ~ userTokenY.address:", userTokenY.address);
+  // console.log("🚀 ~ swapDlmm ~ owner.publicKey:", owner.publicKey);
+  // console.log("🚀 ~ swapDlmm ~ TOKEN_PROGRAM_ID:", TOKEN_PROGRAM_ID);
+  // console.log("🚀 ~ swapDlmm ~ TOKEN_PROGRAM_ID:", TOKEN_PROGRAM_ID);
+  // console.log(
+  //   "🚀 ~ swapDlmm ~ dlmmPool.lbPair.reserveX:",
+  //   dlmmPool.lbPair.reserveX
+  // );
+  // console.log(
+  //   "🚀 ~ swapDlmm ~ dlmmPool.lbPair.tokenXMint:",
+  //   dlmmPool.lbPair.tokenXMint
+  // );
+  // console.log(
+  //   "🚀 ~ swapDlmm ~ dlmmPool.lbPair.tokenYMint:",
+  //   dlmmPool.lbPair.tokenYMint
+  // );
   try {
     const binArrays: AccountMeta[] = swapQuote.binArraysPubkey.map((pubkey) => {
       return {
@@ -108,7 +110,7 @@ export const swapDlmm = async () => {
       .proxySwapDlmm(swapAmount, swapQuote.minOutAmount)
       .accounts({
         binArrayBitmapExtension: null,
-        // eventAuthority: eventAuthority,
+        eventAuthority: eventAuthority,
         reserveY: dlmmPool.lbPair.reserveY,
         tokenYMint: dlmmPool.lbPair.tokenYMint,
         tokenXMint: dlmmPool.lbPair.tokenXMint,
@@ -125,9 +127,17 @@ export const swapDlmm = async () => {
         hostFeeIn: null,
       })
       .remainingAccounts(binArrays)
-      .signers([owner])
-      .rpc();
-    console.log("🚀 ~ swapDlmm ~ signature:", signature);
+      .transaction();
+    // .signers([owner])
+    // .rpc();
+
+    const simulationResult = await runSimulateTransaction(
+      connection,
+      [owner],
+      owner.publicKey,
+      [signature]
+    );
+    console.log("🚀 ~ swapDlmm ~ simulationResult:", simulationResult);
     // const swapTx = await dlmmPool.swap({
     //   inToken: dlmmPool.tokenY.publicKey,
     //   binArraysPubkey: swapQuote.binArraysPubkey,

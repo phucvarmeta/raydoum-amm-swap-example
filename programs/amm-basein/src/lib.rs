@@ -5,7 +5,7 @@ pub mod errors;
 pub mod instructions;
 pub mod utils;
 
-declare_id!("En4ePE1rLRxZHFe7c49ChZE3wwJAfdELNjWW9yydxfFA");
+declare_id!("97Ld8XGfiBPSqDxu7cttEQSS24m9qGMU1efwkT7Y8mvu");
 
 #[program]
 pub mod amm_basein {
