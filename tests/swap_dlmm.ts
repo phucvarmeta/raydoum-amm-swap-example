@@ -108,7 +108,7 @@ export const swapDlmm = async () => {
       .proxySwapDlmm(swapAmount, swapQuote.minOutAmount)
       .accounts({
         binArrayBitmapExtension: null,
-        eventAuthority: eventAuthority,
+        // eventAuthority: eventAuthority,
         reserveY: dlmmPool.lbPair.reserveY,
         tokenYMint: dlmmPool.lbPair.tokenYMint,
         tokenXMint: dlmmPool.lbPair.tokenXMint,
