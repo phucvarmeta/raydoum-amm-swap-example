@@ -104,6 +104,7 @@ export const swap = async () => {
       owner.publicKey
     );
     const amountAAfter = userCoinTokenAccount.amount;
+    console.log("🚀 ~ swap ~ amountAAfter:", amountAAfter);
 
     return tx;
   } catch (error) {
