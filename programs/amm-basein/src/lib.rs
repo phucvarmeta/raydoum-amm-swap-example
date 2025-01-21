@@ -14,6 +14,12 @@ declare_id!("Aaz9GePyuVMTozYh2sXuYLaSHhubE8nYuwBqxSbGHo89");
 pub mod amm_basein {
     use super::*;
 
+    #[error_code]
+    pub enum MyError {
+        #[msg("not profit")]
+        NotProfit
+    }
+    
     /// swap_base_in instruction
     pub fn proxy_swap_base_in(
         ctx: Context<ProxySwapBaseIn>,
@@ -23,7 +29,8 @@ pub mod amm_basein {
         let clone_account = ctx.accounts.user_token_source.clone();
         let mut account_data = clone_account.try_borrow_mut_data()?;
         let mut token_account = TokenAccount::try_deserialize(&mut account_data.as_ref()).expect("Error Deserializing Data");
-        msg!("balance before: {}", token_account.amount);
+        let before_balance = token_account.amount;
+        msg!("balance before: {}", before_balance);
         // Release the borrow before moving ctx
         drop(account_data);
 
@@ -31,7 +38,11 @@ pub mod amm_basein {
 
         account_data = clone_account.try_borrow_mut_data()?;
         token_account = TokenAccount::try_deserialize(&mut account_data.as_ref()).expect("Error Deserializing Data");
-        msg!("balance after: {}", token_account.amount);
+        let after_balance = token_account.amount;
+        msg!("balance after: {}", after_balance);
+
+        require!(after_balance > before_balance, MyError::NotProfit);
+
         Ok(())
     }
     /// swap_base_in instruction
