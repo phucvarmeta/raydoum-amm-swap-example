@@ -107,6 +107,7 @@ export const swap = async () => {
 
     return tx;
   } catch (error) {
+    console.log("🚀 ~ swap ~ error:", error);
     return null;
   }
 };

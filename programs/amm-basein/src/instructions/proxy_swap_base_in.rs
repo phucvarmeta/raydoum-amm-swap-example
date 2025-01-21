@@ -98,9 +98,6 @@ pub struct ProxySwapBaseIn<'info> {
     /// CHECK: Safe. The spl token program
     pub token_program: Program<'info, Token>,
 
-    #[account(mut)]
-    pub user_token_source_ata: Box<Account<'info, TokenAccount>>,
-
     /// CHECK:  Sysvar info
     #[account(address = sysvar::instructions::ID)]
     pub sysvar_info: AccountInfo<'info>,

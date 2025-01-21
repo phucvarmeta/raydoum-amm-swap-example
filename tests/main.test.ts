@@ -61,7 +61,7 @@ describe("amm-proxy", () => {
     // console.log("🚀 ~ it ~ ownerTokenX:", ownerTokenX);
 
     // console.log("🚀 ~ it ~ dlmmPool:", dlmmPool.lbPair);
-    // await swap();
+    await swap();
     // getLBPairBySingleToken("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 
     // const baseMint = await createTokenMint(connection, owner, {
@@ -99,7 +99,7 @@ describe("amm-proxy", () => {
 
     // await seedBin(owner, poolKey);
 
-    await swapDlmm();
+    // await swapDlmm();
 
     // const swapTx = await swap();
     // const swapDlmmTx = await swapDlmm();
