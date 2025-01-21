@@ -8,7 +8,7 @@ import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { getCurrentWallet } from "./utils";
 import * as anchor from "@coral-xyz/anchor";
 import { AmmBasein } from "../target/types/amm_basein";
-import { Program } from "@coral-xyz/anchor";
+import { Program, Idl } from "@coral-xyz/anchor";
 import idl from "../target/idl/amm_basein.json";
 
 export const txVersion = TxVersion.V0; // or TxVersion.LEGACY
@@ -26,7 +26,11 @@ export const init = async (params?: { loadToken?: boolean }) => {
   const customProvider = new anchor.AnchorProvider(connection, customWallet, {
     preflightCommitment: "confirmed",
   });
-  const program = new Program(idl as AmmBasein, customProvider);
+  const program = new Program(
+    idl as Idl,
+    "97Ld8XGfiBPSqDxu7cttEQSS24m9qGMU1efwkT7Y8mvu",
+    customProvider
+  );
   anchor.setProvider(customProvider);
 
   if (raydium) return { raydium, customProvider, program };
