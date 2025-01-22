@@ -31,12 +31,12 @@ export const swapDlmm = async () => {
   // );
 
   const POOL_ADDRESS = new PublicKey(
-    "766eFWjVCuDgL3NrA2wsXCuLG1GPvauVu1g8RBNdcCS7"
+    "2dPLDdZd957tPPaeGaXNoAKvEY1X36PtUu5GwbnF7Vay"
   ); // You can get your desired pool address from the API https://dlmm-api.meteora.ag/pair/all
   const dlmmPool = await DLMM.create(connection, POOL_ADDRESS);
   console.log("🚀 ~ swapDlmm ~ dlmmPool: abc", dlmmPool.pubkey.toString());
 
-  const swapAmount = new BN(100000000);
+  const swapAmount = new BN(100);
   // Swap quote
   const swapXtoY = false;
   const binArrays = await dlmmPool.getBinArrayForSwap(swapXtoY);
@@ -127,17 +127,16 @@ export const swapDlmm = async () => {
         hostFeeIn: null,
       })
       .remainingAccounts(binArrays)
-      .transaction();
-    // .signers([owner])
-    // .rpc();
+      .signers([owner])
+      .rpc({ commitment: "confirmed" });
 
-    const simulationResult = await runSimulateTransaction(
-      connection,
-      [owner],
-      owner.publicKey,
-      [signature]
-    );
-    console.log("🚀 ~ swapDlmm ~ simulationResult:", simulationResult);
+    // const simulationResult = await runSimulateTransaction(
+    //   connection,
+    //   [owner],
+    //   owner.publicKey,
+    //   [signature]
+    // );
+    // console.log("🚀 ~ swapDlmm ~ simulationResult:", simulationResult);
     // const swapTx = await dlmmPool.swap({
     //   inToken: dlmmPool.tokenY.publicKey,
     //   binArraysPubkey: swapQuote.binArraysPubkey,
