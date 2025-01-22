@@ -22,7 +22,6 @@ const confirmOptions = {
 };
 
 describe("amm-proxy", () => {
-  anchor.setProvider(anchor.AnchorProvider.env());
   // it("create market!", async () => {
   //   // createMarket();
   //   // createMarketV1();

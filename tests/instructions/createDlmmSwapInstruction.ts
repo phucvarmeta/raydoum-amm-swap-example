@@ -1,40 +1,28 @@
-import {
-  PublicKey,
-  sendAndConfirmTransaction,
-  Keypair,
-  AccountMeta,
-} from "@solana/web3.js";
-import { connection, init } from "./config";
+import { PublicKey, Keypair, AccountMeta, Connection } from "@solana/web3.js";
 import BN from "bn.js";
 import DLMM, { StrategyParameters } from "@meteora-ag/dlmm";
 import {
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { DLMM_PROGRAM_IDS } from "./libs/constants";
-import { runSimulateTransaction } from "./libs/utils";
+import { Raydium } from "@raydium-io/raydium-sdk-v2";
+import { Idl, Program } from "@coral-xyz/anchor";
+import { DLMM_PROGRAM_IDS } from "../libs/constants";
 
-export const swapDlmm = async () => {
-  const { owner, program } = await init();
-  console.log("🚀 ~ swapDlmm ~ owner:", owner);
-
-  // const a = await DLMM.getLbPairs(connection, {
-  //   cluster: "devnet",
-  // });
-  // console.log(
-  //   "🚀 ~ swapDlmm ~ a:",
-  //   a.filter(
-  //     (item) =>
-  //       item.account.tokenXMint.toString() ===
-  //       "x2iv8BgzTLCnso9CnG2QuBgAJ2VyAtdwMmXqHpjRC2T"
-  //   )
-  // );
-
-  const POOL_ADDRESS = new PublicKey(
-    "766eFWjVCuDgL3NrA2wsXCuLG1GPvauVu1g8RBNdcCS7"
-  ); // You can get your desired pool address from the API https://dlmm-api.meteora.ag/pair/all
+export const createDlmmSwapInstruction = async (
+  connection: Connection,
+  raydium: Raydium,
+  program: Program<Idl>,
+  user: Keypair,
+  poolId: string,
+  amountIn: number,
+  slippage: number = 1
+) => {
+  // const POOL_ADDRESS = new PublicKey(
+  //   "766eFWjVCuDgL3NrA2wsXCuLG1GPvauVu1g8RBNdcCS7"
+  // ); // You can get your desired pool address from the API https://dlmm-api.meteora.ag/pair/all
+  const POOL_ADDRESS = new PublicKey(poolId); // You can get your desired pool address from the API https://dlmm-api.meteora.ag/pair/all
   const dlmmPool = await DLMM.create(connection, POOL_ADDRESS);
-  console.log("🚀 ~ swapDlmm ~ dlmmPool: abc", dlmmPool.pubkey.toString());
 
   const swapAmount = new BN(100000000);
   // Swap quote
@@ -51,15 +39,15 @@ export const swapDlmm = async () => {
 
   const userTokenX = await getOrCreateAssociatedTokenAccount(
     connection,
-    owner,
+    user,
     dlmmPool.lbPair.tokenXMint,
-    owner.publicKey
+    user.publicKey
   );
   const userTokenY = await getOrCreateAssociatedTokenAccount(
     connection,
-    owner,
+    user,
     dlmmPool.lbPair.tokenYMint,
-    owner.publicKey
+    user.publicKey
   );
 
   const seed = Buffer.from("__event_authority");
@@ -89,7 +77,7 @@ export const swapDlmm = async () => {
         reserveX: dlmmPool.lbPair.reserveX,
         tokenXProgram: TOKEN_PROGRAM_ID,
         tokenYProgram: TOKEN_PROGRAM_ID,
-        user: owner.publicKey,
+        user: user.publicKey,
         userTokenIn: userTokenY.address,
         userTokenOut: userTokenX.address,
         userTokenOutAta: userTokenX.address,
@@ -99,15 +87,9 @@ export const swapDlmm = async () => {
         hostFeeIn: null,
       })
       .remainingAccounts(binArrays)
-      .transaction();
+      .instruction();
 
-    const simulationResult = await runSimulateTransaction(
-      connection,
-      [owner],
-      owner.publicKey,
-      [signature]
-    );
-    console.log("🚀 ~ swapDlmm ~ simulationResult:", simulationResult);
+    return signature;
   } catch (error) {
     console.log("🚀 ~ swapDlmm ~ error:", error);
     return null;
