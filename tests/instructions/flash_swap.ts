@@ -11,7 +11,7 @@ export async function flashSwap() {
       provider.connection,
       raydium,
       owner,
-      "RAYDIUM_POOL_ID",
+      "3t9XjW4UpU4CxsiUKTXarFAtsdERZqSZTFzZD8CyK8mq",
       100, // Amount in
       0 // Slippage
     );
@@ -19,7 +19,7 @@ export async function flashSwap() {
   const { accounts: dlmmAccounts, remainingAccounts } = await getDlmmSwapArgs(
     provider.connection,
     owner,
-    "DLMM_POOL_ID",
+    "2dPLDdZd957tPPaeGaXNoAKvEY1X36PtUu5GwbnF7Vay",
     true,
     Number(raydiumDatas.amountOut.toString()), // Amount in
     0 // Slippage

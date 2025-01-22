@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::Token;
+use anchor_spl::token::{Token, TokenAccount};
 use raydium_amm_cpi::SwapBaseIn;
 
 #[derive(Accounts, Clone)]
@@ -132,7 +132,18 @@ pub fn flash_swap<'a, 'b, 'c, 'info>(
     amount_in: u64,
     minimum_amount_out: u64,
 ) -> Result<()> {
+    let clone_account = ctx.accounts.user_token_destination.clone();
+    let mut account_data = clone_account.try_borrow_mut_data()?;
+    let mut token_account = TokenAccount::try_deserialize(&mut account_data.as_ref())
+        .expect("Error Deserializing Data");
+    let before_balance = token_account.amount;
+
     raydium_amm_cpi::swap_base_in(ctx.accounts.into(), amount_in, minimum_amount_out)?;
+
+    account_data = clone_account.try_borrow_mut_data()?;
+    token_account = TokenAccount::try_deserialize(&mut account_data.as_ref())
+        .expect("Error Deserializing Data");
+    let after_balance = token_account.amount;
 
     let accounts = dlmm::cpi::accounts::Swap {
         lb_pair: ctx.accounts.lb_pair.to_account_info(),
@@ -160,7 +171,7 @@ pub fn flash_swap<'a, 'b, 'c, 'info>(
         program: ctx.accounts.dlmm_program.to_account_info(),
     };
 
-    let raydium_amount_out = 0;
+    let raydium_amount_out = after_balance.checked_sub(before_balance).unwrap();
 
     let cpi_context = CpiContext::new(ctx.accounts.dlmm_program.to_account_info(), accounts)
         .with_remaining_accounts(ctx.remaining_accounts.to_vec());
