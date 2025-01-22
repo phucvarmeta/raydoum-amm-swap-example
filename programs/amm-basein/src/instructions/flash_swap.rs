@@ -3,7 +3,8 @@ use anchor_spl::token::Token;
 use raydium_amm_cpi::SwapBaseIn;
 
 #[derive(Accounts, Clone)]
-pub struct ProxySwapBaseIn<'info> {
+pub struct FlashSwap<'info> {
+    /// ======= Raydium Accounts =======
     /// CHECK: Safe
     pub amm_program: UncheckedAccount<'info>,
     /// CHECK: Safe. amm Account
@@ -55,14 +56,52 @@ pub struct ProxySwapBaseIn<'info> {
     pub user_source_owner: Signer<'info>,
     /// CHECK: Safe. The spl token program
     pub token_program: Program<'info, Token>,
+
+    /// ======= DLMM Account =======
+    #[account(mut)]
+    /// CHECK: The pool account
+    pub lb_pair: UncheckedAccount<'info>,
+
+    /// CHECK: Bin array extension account of the pool
+    pub bin_array_bitmap_extension: Option<UncheckedAccount<'info>>,
+
+    #[account(mut)]
+    /// CHECK: Reserve account of token X
+    pub reserve_x: UncheckedAccount<'info>,
+    #[account(mut)]
+    /// CHECK: Reserve account of token Y
+    pub reserve_y: UncheckedAccount<'info>,
+
+    /// CHECK: Mint account of token X
+    pub token_x_mint: UncheckedAccount<'info>,
+    /// CHECK: Mint account of token Y
+    pub token_y_mint: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK: Oracle account of the pool
+    pub oracle: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK: Referral fee account
+    pub host_fee_in: Option<UncheckedAccount<'info>>,
+
+    #[account(address = dlmm::ID)]
+    /// CHECK: DLMM program
+    pub dlmm_program: UncheckedAccount<'info>,
+
+    /// CHECK: DLMM program event authority for event CPI
+    pub event_authority: UncheckedAccount<'info>,
+
+    /// CHECK: Token program of mint X
+    pub token_x_program: UncheckedAccount<'info>,
+    /// CHECK: Token program of mint Y
+    pub token_y_program: UncheckedAccount<'info>,
 }
 
-impl<'a, 'b, 'c, 'info> From<&mut ProxySwapBaseIn<'info>>
+impl<'a, 'b, 'c, 'info> From<&mut FlashSwap<'info>>
     for CpiContext<'a, 'b, 'c, 'info, SwapBaseIn<'info>>
 {
-    fn from(
-        accounts: &mut ProxySwapBaseIn<'info>,
-    ) -> CpiContext<'a, 'b, 'c, 'info, SwapBaseIn<'info>> {
+    fn from(accounts: &mut FlashSwap<'info>) -> CpiContext<'a, 'b, 'c, 'info, SwapBaseIn<'info>> {
         let cpi_accounts = SwapBaseIn {
             amm: accounts.amm.clone(),
             amm_authority: accounts.amm_authority.clone(),
@@ -88,10 +127,42 @@ impl<'a, 'b, 'c, 'info> From<&mut ProxySwapBaseIn<'info>>
 }
 
 /// swap_base_in instruction
-pub fn swap_base_in(
-    ctx: Context<ProxySwapBaseIn>,
+pub fn flash_swap<'a, 'b, 'c, 'info>(
+    ctx: Context<'a, 'b, 'c, 'info, FlashSwap<'info>>,
     amount_in: u64,
     minimum_amount_out: u64,
 ) -> Result<()> {
-    raydium_amm_cpi::swap_base_in(ctx.accounts.into(), amount_in, minimum_amount_out)
+    raydium_amm_cpi::swap_base_in(ctx.accounts.into(), amount_in, minimum_amount_out)?;
+
+    let accounts = dlmm::cpi::accounts::Swap {
+        lb_pair: ctx.accounts.lb_pair.to_account_info(),
+        bin_array_bitmap_extension: ctx
+            .accounts
+            .bin_array_bitmap_extension
+            .as_ref()
+            .map(|account| account.to_account_info()),
+        reserve_x: ctx.accounts.reserve_x.to_account_info(),
+        reserve_y: ctx.accounts.reserve_y.to_account_info(),
+        user_token_in: ctx.accounts.user_token_destination.to_account_info(),
+        user_token_out: ctx.accounts.user_token_source.to_account_info(),
+        token_x_mint: ctx.accounts.token_x_mint.to_account_info(),
+        token_y_mint: ctx.accounts.token_y_mint.to_account_info(),
+        oracle: ctx.accounts.oracle.to_account_info(),
+        host_fee_in: ctx
+            .accounts
+            .host_fee_in
+            .as_ref()
+            .map(|account| account.to_account_info()),
+        user: ctx.accounts.user_source_owner.to_account_info(),
+        token_x_program: ctx.accounts.token_x_program.to_account_info(),
+        token_y_program: ctx.accounts.token_y_program.to_account_info(),
+        event_authority: ctx.accounts.event_authority.to_account_info(),
+        program: ctx.accounts.dlmm_program.to_account_info(),
+    };
+
+    let raydium_amount_out = 0;
+
+    let cpi_context = CpiContext::new(ctx.accounts.dlmm_program.to_account_info(), accounts)
+        .with_remaining_accounts(ctx.remaining_accounts.to_vec());
+    dlmm::cpi::swap(cpi_context, raydium_amount_out, amount_in)
 }

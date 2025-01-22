@@ -8,21 +8,20 @@ import {
 } from "@solana/spl-token";
 import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { connection, init } from "./config";
-import { createAmmPool } from "./create_amm_pool";
-import { createMarket } from "./create_market";
+import { createAmmPool } from "./instructions/create_amm_pool";
+import { createMarket } from "./instructions/create_market";
+import { flashSwap } from "./instructions/flash_swap";
 import { createPermissionlessDlmmPool } from "./libs/create_pool_utils";
 import { createTokenMint } from "./libs/create_token_mint";
 import { getQuoteMint } from "./libs/utils";
-import { seedBin } from "./seed_liquidity_single_bin";
-import { swap } from "./swap";
-import { swapDlmm } from "./swap_dlmm";
+import { swap } from "./instructions/swap";
+import { swapDlmm } from "./instructions/swap_dlmm";
 
 const confirmOptions = {
   skipPreflight: true,
 };
 
 describe("amm-proxy", () => {
-  anchor.setProvider(anchor.AnchorProvider.env());
   // it("create market!", async () => {
   //   // createMarket();
   //   // createMarketV1();
@@ -99,7 +98,7 @@ describe("amm-proxy", () => {
 
     // await seedBin(owner, poolKey);
 
-    await swapDlmm();
+    await flashSwap();
 
     // const swapTx = await swap();
     // const swapDlmmTx = await swapDlmm();

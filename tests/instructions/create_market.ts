@@ -4,10 +4,10 @@ import {
   DEVNET_PROGRAM_ID,
 } from "@raydium-io/raydium-sdk-v2";
 import { createMint } from "@solana/spl-token";
-import { connection, init, txVersion } from "./config";
+import { connection, init, txVersion } from "../config";
 
 export const createMarket = async () => {
-  const { raydium, customProvider, owner } = await init();
+  const { raydium, owner } = await init();
 
   // check mint info here: https://api-v3.raydium.io/mint/list
   // or get mint info by api: await raydium.token.getTokenInfo('mint address')

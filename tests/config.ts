@@ -3,48 +3,56 @@ import {
   TxVersion,
   parseTokenAccountResp,
 } from "@raydium-io/raydium-sdk-v2";
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
-import { getCurrentWallet } from "./utils";
 import * as anchor from "@coral-xyz/anchor";
-import { AmmBasein } from "../target/types/amm_basein";
 import { Program, Idl } from "@coral-xyz/anchor";
 import idl from "../target/idl/amm_basein.json";
+import { AmmBasein } from "../target/types/amm_basein";
+import { CLUSTER } from "./constants";
+import { getCurrentWallet } from "./utils/utils";
 
 export const txVersion = TxVersion.V0; // or TxVersion.LEGACY
-const cluster = "devnet"; // 'mainnet' | 'devnet'
+export const CLUSTER_URL = "https://api.devnet.solana.com";
+export const PROGRAM_ID = "97Ld8XGfiBPSqDxu7cttEQSS24m9qGMU1efwkT7Y8mvu";
+export const connection = new Connection(CLUSTER_URL, "confirmed");
 
 let raydium: Raydium | undefined;
-export const connection = new Connection(
-  "https://api.devnet.solana.com",
-  "confirmed"
-);
 
-export const init = async (params?: { loadToken?: boolean }) => {
+export interface TestProvider {
+  raydium: Raydium;
+  provider: anchor.AnchorProvider;
+  program: anchor.Program<AmmBasein>;
+  owner: anchor.web3.Keypair;
+}
+
+export const init = async (params?: {
+  loadToken?: boolean;
+}): Promise<TestProvider> => {
   const owner = await getCurrentWallet();
   const customWallet = new anchor.Wallet(owner);
   const customProvider = new anchor.AnchorProvider(connection, customWallet, {
     preflightCommitment: "confirmed",
   });
-  const program = new Program(
-    idl as Idl,
-    "97Ld8XGfiBPSqDxu7cttEQSS24m9qGMU1efwkT7Y8mvu",
+  const program = new Program<AmmBasein>(
+    idl as unknown as AmmBasein,
+    PROGRAM_ID,
     customProvider
   );
   anchor.setProvider(customProvider);
 
-  if (raydium) return { raydium, customProvider, program };
+  if (raydium) return { raydium, provider: customProvider, program, owner };
 
-  console.log(`connect to rpc ${connection.rpcEndpoint} in ${cluster}`);
+  console.log(`connect to rpc ${connection.rpcEndpoint} in ${CLUSTER}`);
   raydium = await Raydium.load({
     owner,
     connection,
-    cluster,
+    cluster: CLUSTER,
     disableFeatureCheck: true,
     disableLoadToken: !params?.loadToken,
     blockhashCommitment: "finalized",
   });
-  return { raydium, customProvider, program, owner };
+  return { raydium, provider: customProvider, program, owner };
 };
 
 export const fetchTokenAccountData = async () => {
@@ -69,6 +77,3 @@ export const fetchTokenAccountData = async () => {
   });
   return tokenAccountData;
 };
-
-export const grpcUrl = "<YOUR_GRPC_URL>";
-export const grpcToken = "<YOUR_GRPC_TOKEN>";

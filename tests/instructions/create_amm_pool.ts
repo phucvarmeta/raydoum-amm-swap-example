@@ -2,7 +2,7 @@ import {
   MARKET_STATE_LAYOUT_V3,
   DEVNET_PROGRAM_ID,
 } from "@raydium-io/raydium-sdk-v2";
-import { connection, init, txVersion } from "./config";
+import { connection, init, txVersion } from "../config";
 import { PublicKey, Connection } from "@solana/web3.js";
 import BN from "bn.js";
 import { getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";

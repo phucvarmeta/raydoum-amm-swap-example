@@ -5,7 +5,7 @@ import {
   ApiV3PoolInfoStandardItem,
   fetchMultipleInfo,
 } from "@raydium-io/raydium-sdk-v2";
-import { connection, init } from "./config";
+import { connection, init } from "../config";
 import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 import BN from "bn.js";
 
