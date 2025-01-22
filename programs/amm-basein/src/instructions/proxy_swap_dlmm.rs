@@ -1,4 +1,6 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::sysvar};
+
+use crate::utils::proxy_swap_dlmm_check;
 
 #[derive(Accounts)]
 pub struct DlmmSwap<'info> {
@@ -51,6 +53,8 @@ pub struct DlmmSwap<'info> {
     /// CHECK: Token program of mint Y
     pub token_y_program: UncheckedAccount<'info>,
     // Bin arrays need to be passed using remaining accounts
+    #[account(address = sysvar::instructions::ID)]
+    pub sysvar_info: AccountInfo<'info>,
 }
 
 /// Executes a DLMM swap
@@ -66,6 +70,7 @@ pub struct DlmmSwap<'info> {
 /// Returns a `Result` indicating success or failure.
 pub fn handle_dlmm_swap<'a, 'b, 'c, 'info>(
     ctx: Context<'a, 'b, 'c, 'info, DlmmSwap<'info>>,
+    _proxy_swap_base_in_index: u8,
     amount_in: u64,
     min_amount_out: u64,
 ) -> Result<()> {
@@ -98,4 +103,7 @@ pub fn handle_dlmm_swap<'a, 'b, 'c, 'info>(
     let cpi_context = CpiContext::new(ctx.accounts.dlmm_program.to_account_info(), accounts)
         .with_remaining_accounts(ctx.remaining_accounts.to_vec());
     dlmm::cpi::swap(cpi_context, amount_in, min_amount_out)
+
+    // Check if the amount in of
+    // proxy_swap_dlmm_check(&ctx, proxy_swap_base_in_index, amount_out)
 }

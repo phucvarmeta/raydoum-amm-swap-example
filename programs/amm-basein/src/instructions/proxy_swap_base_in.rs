@@ -1,6 +1,8 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::sysvar};
 use anchor_spl::token::Token;
 use raydium_amm_cpi::SwapBaseIn;
+
+use crate::utils::proxy_swap_raydium_check;
 #[derive(Accounts, Clone)]
 pub struct ProxySwapBaseIn<'info> {
     /// CHECK: Safe
@@ -54,6 +56,8 @@ pub struct ProxySwapBaseIn<'info> {
     pub user_source_owner: Signer<'info>,
     /// CHECK: Safe. The spl token program
     pub token_program: Program<'info, Token>,
+    #[account(address = sysvar::instructions::ID)]
+    pub sysvar_info: AccountInfo<'info>,
 }
 
 impl<'a, 'b, 'c, 'info> From<&mut ProxySwapBaseIn<'info>>
@@ -92,5 +96,7 @@ pub fn swap_base_in(
     amount_in: u64,
     minimum_amount_out: u64,
 ) -> Result<()> {
+    proxy_swap_raydium_check(&ctx)?;
+
     raydium_amm_cpi::swap_base_in(ctx.accounts.into(), amount_in, minimum_amount_out)
 }
