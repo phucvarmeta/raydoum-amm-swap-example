@@ -21,7 +21,6 @@ export const getDlmmSwapArgs = async (
 
   const swapAmount = new BN(amountIn);
   // Swap quote
-  const swapXtoY = false;
   const binArrays = await dlmmPool.getBinArrayForSwap(swapXtoY);
   const swapQuote = dlmmPool.swapQuote(
     swapAmount,

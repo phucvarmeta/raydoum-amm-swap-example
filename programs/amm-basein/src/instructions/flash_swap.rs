@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount};
 use raydium_amm_cpi::SwapBaseIn;
 
+use crate::errors::MarketError;
+
 #[derive(Accounts, Clone)]
 pub struct FlashSwap<'info> {
     /// ======= Raydium Accounts =======
@@ -137,6 +139,9 @@ pub fn flash_swap<'a, 'b, 'c, 'info>(
     let mut token_account = TokenAccount::try_deserialize(&mut account_data.as_ref())
         .expect("Error Deserializing Data");
     let before_balance = token_account.amount;
+    msg!("balance before: {}", before_balance);
+    // Release the borrow before moving ctx
+    drop(account_data);
 
     raydium_amm_cpi::swap_base_in(ctx.accounts.into(), amount_in, minimum_amount_out)?;
 
@@ -144,6 +149,8 @@ pub fn flash_swap<'a, 'b, 'c, 'info>(
     token_account = TokenAccount::try_deserialize(&mut account_data.as_ref())
         .expect("Error Deserializing Data");
     let after_balance = token_account.amount;
+    msg!("balance after: {}", after_balance);
+    drop(account_data);
 
     let accounts = dlmm::cpi::accounts::Swap {
         lb_pair: ctx.accounts.lb_pair.to_account_info(),
@@ -171,9 +178,10 @@ pub fn flash_swap<'a, 'b, 'c, 'info>(
         program: ctx.accounts.dlmm_program.to_account_info(),
     };
 
-    let raydium_amount_out = after_balance.checked_sub(before_balance).unwrap();
+    let raydium_amount_out = after_balance.checked_sub(before_balance).unwrap().clone();
 
     let cpi_context = CpiContext::new(ctx.accounts.dlmm_program.to_account_info(), accounts)
         .with_remaining_accounts(ctx.remaining_accounts.to_vec());
-    dlmm::cpi::swap(cpi_context, raydium_amount_out, amount_in)
+
+    dlmm::cpi::swap(cpi_context, raydium_amount_out.clone(), amount_in.clone())
 }

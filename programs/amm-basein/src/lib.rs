@@ -5,7 +5,7 @@ use instructions::*;
 pub mod errors;
 pub mod instructions;
 
-declare_id!("Aaz9GePyuVMTozYh2sXuYLaSHhubE8nYuwBqxSbGHo89");
+declare_id!("97Ld8XGfiBPSqDxu7cttEQSS24m9qGMU1efwkT7Y8mvu");
 
 #[program]
 pub mod amm_basein {
